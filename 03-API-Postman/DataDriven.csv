@@ -1,0 +1,6 @@
+title,description,price,expectedStatus
+Phone,New Phone,500,201
+Laptop,Gaming laptop,1500,201
+,Missing title,300,400
+TV,Invalid price,abc,400
+Mouse,Negative price,-10,400

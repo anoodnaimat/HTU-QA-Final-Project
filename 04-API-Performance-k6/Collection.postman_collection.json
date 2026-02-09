@@ -1,0 +1,170 @@
+{
+  "info": {
+    "_postman_id": "a0ac12f1-dbac-41ef-8150-e7cc326033f8",
+    "name": "Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51082963",
+    "_collection_link": "https://go.postman.co/collection/51082963-a0ac12f1-dbac-41ef-8150-e7cc326033f8?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Search Users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Users array not empty\", () => {\r",
+              "    pm.expect(res.users.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"First user has id\", () => {\r",
+              "    pm.expect(res.users[0]).to.have.property(\"id\");\r",
+              "});\r",
+              "\r",
+              "\r",
+              "",
+              "",
+              "pm.test('Response time is acceptable', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "})"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/users/search?q=John",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "users",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "John"
+            }
+          ]
+        },
+        "description": "## Purpose\nSearches for users based on a query string, returning all users that match the search criteria.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/search?q=John`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `q` (required) - The search query string to find matching users (searches across name, username, email, etc.)\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"email\": \"john.doe@x.dummyjson.com\",\n      \"username\": \"johnd\",\n      \"age\": 30,\n      ...\n    }\n  ],\n  \"total\": 5,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies users array exists\n- Checks pagination metadata (total, skip, limit)\n- Confirms search results match query criteria"
+      },
+      "response": []
+    },
+    {
+      "name": "Filter Users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+              "var jsonData = pm.response.json();\r",
+              "",
+              "",
+              "pm.test('Response time is acceptable', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "})"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/users/filter?key=hair.color&value=Brown",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "users",
+            "filter"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "hair.color"
+            },
+            {
+              "key": "value",
+              "value": "Brown"
+            }
+          ]
+        },
+        "description": "## Purpose\nFilters users based on a specific field key-value pair, allowing precise user data filtering.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/filter?key=hair.color&value=Brown`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `key` (required) - The field path to filter by (supports nested fields with dot notation, e.g., `hair.color`, `address.city`)\n- `value` (required) - The value to match for the specified key\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"Emily\",\n      \"lastName\": \"Johnson\",\n      \"hair\": {\n        \"color\": \"Brown\",\n        \"type\": \"Curly\"\n      },\n      ...\n    }\n  ],\n  \"total\": 50,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all users match the filter criteria\n- Checks filtered field contains expected value\n- Confirms pagination metadata is present"
+      },
+      "response": []
+    },
+    {
+      "name": "Limit and skip Users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+              "var jsonData = pm.response.json();\r",
+              "",
+              "",
+              "pm.test('Response time is acceptable', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/users?limit=5&skip=10&select=firstName,age",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "users"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            },
+            {
+              "key": "skip",
+              "value": "10"
+            },
+            {
+              "key": "select",
+              "value": "firstName,age"
+            }
+          ]
+        },
+        "description": "## Purpose\nRetrieves a paginated list of users with specific fields selected, demonstrating pagination and field filtering capabilities.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users?limit=5&skip=10&select=firstName,age`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `limit` (optional) - Number of users to return (default: 30)\n- `skip` (optional) - Number of users to skip for pagination (default: 0)\n- `select` (optional) - Comma-separated list of fields to include in response\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 11,\n      \"firstName\": \"John\",\n      \"age\": 30\n    }\n  ],\n  \"total\": 208,\n  \"skip\": 10,\n  \"limit\": 5\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies correct number of users returned (limit)\n- Checks pagination offset (skip)\n- Confirms only selected fields are present in response"
+      },
+      "response": []
+    }
+  ]
+}

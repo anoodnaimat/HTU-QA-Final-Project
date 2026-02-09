@@ -1,0 +1,2526 @@
+{
+  "info": {
+    "_postman_id": "7e7fceed-20b4-4cc4-81c7-9e02d03dfcbc",
+    "name": "Final Project-HTU",
+    "description": "# Final Project-HTU API Documentation\n\n## Overview\n\nThis collection provides comprehensive API testing coverage for a demo e-commerce platform (DummyJSON API). It includes endpoints for authentication, product management, shopping cart operations, user management, and social features like posts and comments.\n\nThe collection is organized into four main sections covering different API domains, with both positive and negative test cases to ensure robust API validation.\n\n## Base URL\n\nThe API base URL is configured using the environment variable:\n- **Variable**: `{{baseURL}}`\n- **Default Value**: `https://dummyjson.com`\n\n## Authentication\n\nThis API uses **Bearer Token** authentication for protected endpoints.\n\n### Authentication Flow\n\n1. **Login** to obtain an access token\n2. The token is automatically stored in the `{{accessToken}}` environment variable\n3. Use the token in subsequent requests via the Authorization header\n\n### Authentication Variables\n\n- `{{accessToken}}` - JWT token obtained after successful login\n- Automatically set after login and used for authenticated requests\n\n---\n\n## API Sections\n\n### 1. Authentication (Auth - Docs)\n\nHandles user authentication and session management.\n\n#### **Login User** - `POST {{baseURL}}/auth/login`\nAuthenticates a user and returns an access token.\n\n**Request Body** (JSON):\n```json\n{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\"\n}\n```\n\n**Response**: Returns user details and access token\n- Status: `200 OK`\n- The access token is automatically saved to `{{accessToken}}`\n\n**Tests**:\n- Validates status code is 200\n- Checks access token exists in response\n- Stores token in environment variable\n\n---\n\n#### **Get auth User** - `GET {{baseURL}}/auth/me`\nRetrieves the currently authenticated user's information.\n\n**Authentication**: Requires Bearer token\n\n**Response**: Returns authenticated user's profile\n- Status: `200 OK`\n\n---\n\n#### **Refresh auth Session** - `POST {{baseURL}}/auth/refresh`\nRefreshes the authentication session and obtains a new access token.\n\n**Authentication**: Requires valid refresh token\n\n**Response**: Returns new access token\n- Status: `200 OK`\n\n---\n\n### 2. Products (Products - Docs)\n\nComprehensive product catalog management with search, filtering, and CRUD operations.\n\n#### **Get all Product** - `GET {{baseURL}}/products`\nRetrieves a list of all products in the catalog.\n\n**Response**: Array of product objects\n- Status: `200 OK`\n\n---\n\n#### **Get a Single Product** - `GET {{baseURL}}/products/1`\nFetches details of a specific product by ID.\n\n**Path Parameters**:\n- `id` - Product ID (e.g., 1)\n\n**Response**: Single product object\n- Status: `200 OK`\n\n---\n\n#### **Search Product** - `GET {{baseURL}}/products/search?q=phone`\nSearches for products matching the query string.\n\n**Query Parameters**:\n- `q` - Search query (e.g., \"phone\")\n\n**Response**: Array of matching products\n- Status: `200 OK`\n\n---\n\n#### **Negative-Limit and Skip Product** - `GET {{baseURL}}/products?limit=-10&skip=abc&select=title,price`\n**Negative test case** - Tests API behavior with invalid pagination parameters.\n\n**Query Parameters**:\n- `limit=-10` - Invalid negative limit\n- `skip=abc` - Invalid non-numeric skip value\n- `select=title,price` - Fields to return\n\n**Expected**: Should handle invalid parameters gracefully\n- Tests error handling and validation\n\n---\n\n#### **Sort Product** - `GET {{baseURL}}/products?sortBy=title&order=asc`\nRetrieves products sorted by specified field and order.\n\n**Query Parameters**:\n- `sortBy=title` - Field to sort by\n- `order=asc` - Sort order (asc/desc)\n\n**Response**: Sorted array of products\n- Status: `200 OK`\n\n---\n\n#### **Get all Product Categories** - `GET {{baseURL}}/products/categories`\nRetrieves all available product categories.\n\n**Response**: Array of category objects\n- Status: `200 OK`\n\n---\n\n#### **Get Product Category list** - `GET {{baseURL}}/products/category-list`\nRetrieves a simple list of category names.\n\n**Response**: Array of category names\n- Status: `200 OK`\n\n---\n\n#### **Get Products By a Category** - `GET {{baseURL}}/products/category/smartphones`\nFetches all products belonging to a specific category.\n\n**Path Parameters**:\n- `category` - Category name (e.g., \"smartphones\")\n\n**Response**: Array of products in the category\n- Status: `200 OK`\n\n---\n\n#### **Add a New Product** - `POST {{baseURL}}/products/add`\nCreates a new product in the catalog.\n\n**Request Body** (JSON):\n```json\n{\n  \"title\": \"Product Name\"\n}\n```\n\n**Response**: Created product object with ID\n- Status: `201 Created`\n\n**Tests**:\n- Validates status code is 201\n- Confirms product has an ID\n- Verifies title exists\n\n---\n\n#### **Negative-Update a Product** - `PUT {{baseURL}}/products/-1`\n**Negative test case** - Attempts to update a product with invalid ID.\n\n**Path Parameters**:\n- `id=-1` - Invalid product ID\n\n**Expected**: Should return error for non-existent product\n- Tests error handling for invalid resources\n\n---\n\n#### **Delete a Product** - `DELETE {{baseURL}}/products/1`\nDeletes a product from the catalog.\n\n**Path Parameters**:\n- `id` - Product ID to delete\n\n**Response**: Confirmation of deletion\n- Status: `200 OK`\n\n---\n\n### 3. Shopping Carts (Carts - Docs)\n\nManage shopping cart operations including viewing, creating, updating, and deleting carts.\n\n#### **Get all Carts** - `GET {{baseURL}}/carts`\nRetrieves all shopping carts in the system.\n\n**Response**: Array of cart objects\n- Status: `200 OK`\n\n---\n\n#### **Get a Single Cart** - `GET {{baseURL}}/carts/1`\nFetches details of a specific cart by ID.\n\n**Path Parameters**:\n- `id` - Cart ID (e.g., 1)\n\n**Response**: Single cart object with products\n- Status: `200 OK`\n\n---\n\n#### **Get Carts by a User** - `GET {{baseURL}}/carts/user/5`\nRetrieves all carts belonging to a specific user.\n\n**Path Parameters**:\n- `userId` - User ID (e.g., 5)\n\n**Response**: Array of user's carts\n- Status: `200 OK`\n\n---\n\n#### **Negative-Add a Cart** - `POST {{baseURL}}/carts/add`\n**Negative test case** - Attempts to create a cart with empty products array.\n\n**Request Body** (JSON):\n```json\n{\n  \"userId\": 1,\n  \"products\": []\n}\n```\n\n**Expected**: Should return validation error\n- Status: `400 Bad Request`\n\n**Tests**:\n- Validates cart is not created with empty products\n\n---\n\n#### **Update a Cart** - `PUT {{baseURL}}/carts/1`\nUpdates an existing cart with new products or quantities.\n\n**Path Parameters**:\n- `id` - Cart ID to update\n\n**Request Body** (JSON):\n```json\n{\n  \"merge\": true,\n  \"products\": [\n    { \"id\": 1, \"quantity\": 1 }\n  ]\n}\n```\n\n**Response**: Updated cart object\n- Status: `200 OK`\n\n**Tests**:\n- Validates status code is 200\n\n---\n\n#### **Negative-Delete a Cart** - `DELETE {{baseURL}}/carts/abcd`\n**Negative test case** - Attempts to delete a cart with invalid ID format.\n\n**Path Parameters**:\n- `id=abcd` - Invalid non-numeric cart ID\n\n**Expected**: Should return error for invalid ID format\n- Tests error handling for malformed requests\n\n---\n\n### 4. Users & Posts (Users - Docs)\n\nUser management, search, filtering, and social features including posts and comments.\n\n#### **Get all Users** - `GET {{baseURL}}/users`\nRetrieves a list of all users.\n\n**Response**: Array of user objects\n- Status: `200 OK`\n\n---\n\n#### **Negative-Login User** - `POST {{baseURL}}/user/login`\n**Negative test case** - Tests login with incorrect endpoint path.\n\n**Note**: Correct endpoint is `/auth/login`, this tests wrong path handling\n\n**Expected**: Should return error for invalid endpoint\n- Tests API routing and error responses\n\n---\n\n#### **Negative-Get Current auth User** - `GET {{baseURL}}/user/me`\n**Negative test case** - Tests getting current user with incorrect endpoint.\n\n**Note**: Correct endpoint is `/auth/me`, this tests wrong path handling\n\n**Expected**: Should return error for invalid endpoint\n\n---\n\n#### **Negative-Get a Single User** - `GET {{baseURL}}/users/9999`\n**Negative test case** - Attempts to fetch a non-existent user.\n\n**Path Parameters**:\n- `id=9999` - Non-existent user ID\n\n**Expected**: Should return error for user not found\n- Status: `404 Not Found`\n\n---\n\n#### **Search Users** - `GET {{baseURL}}/users/search?q=John`\nSearches for users matching the query string.\n\n**Query Parameters**:\n- `q` - Search query (e.g., \"John\")\n\n**Response**: Array of matching users\n- Status: `200 OK`\n\n---\n\n#### **Filter Users** - `GET {{baseURL}}/users/filter?key=hair.color&value=Brown`\nFilters users by specific attributes.\n\n**Query Parameters**:\n- `key` - Attribute path (e.g., \"hair.color\")\n- `value` - Filter value (e.g., \"Brown\")\n\n**Response**: Array of filtered users\n- Status: `200 OK`\n\n---\n\n#### **Limit and skip Users** - `GET {{baseURL}}/users?limit=5&skip=10&select=firstName,age`\nRetrieves users with pagination and field selection.\n\n**Query Parameters**:\n- `limit=5` - Number of results to return\n- `skip=10` - Number of results to skip\n- `select=firstName,age` - Specific fields to return\n\n**Response**: Paginated array of users with selected fields\n- Status: `200 OK`\n\n---\n\n#### **Sort and order Users** - `GET {{baseURL}}/users?sortBy=firstName&order=asc`\nRetrieves users sorted by specified field.\n\n**Query Parameters**:\n- `sortBy=firstName` - Field to sort by\n- `order=asc` - Sort order (asc/desc)\n\n**Response**: Sorted array of users\n- Status: `200 OK`\n\n---\n\n#### **Get all Posts Tags** - `GET {{baseURL}}/posts/tags`\nRetrieves all available post tags.\n\n**Response**: Array of tag objects\n- Status: `200 OK`\n\n---\n\n#### **Get Posts Tag List** - `GET {{baseURL}}/posts/tag-list`\nRetrieves a simple list of tag names.\n\n**Response**: Array of tag names\n- Status: `200 OK`\n\n---\n\n#### **Get all Posts By UserID** - `GET {{baseURL}}/posts/user/5`\nFetches all posts created by a specific user.\n\n**Path Parameters**:\n- `userId` - User ID (e.g., 5)\n\n**Response**: Array of user's posts\n- Status: `200 OK`\n\n---\n\n#### **Get Posts Comments** - `GET {{baseURL}}/posts/1/comments`\nRetrieves all comments for a specific post.\n\n**Path Parameters**:\n- `postId` - Post ID (e.g., 1)\n\n**Response**: Array of comment objects\n- Status: `200 OK`\n\n---\n\n#### **Add a New Post** - `POST {{baseURL}}/posts/add`\nCreates a new post.\n\n**Request Body** (JSON):\n```json\n{\n  \"title\": \"Post title\",\n  \"userId\": 5\n}\n```\n\n**Response**: Created post object\n- Status: `200 OK`\n\n**Tests**:\n- Validates status code is 200\n\n---\n\n#### **Update a Post** - `PUT {{baseURL}}/posts/1`\nUpdates an existing post.\n\n**Path Parameters**:\n- `id` - Post ID to update\n\n**Request Body** (JSON):\n```json\n{\n  \"title\": \"Updated title\"\n}\n```\n\n**Response**: Updated post object\n- Status: `200 OK`\n\n---\n\n#### **Delete a Post** - `DELETE {{baseURL}}/posts/1`\nDeletes a post.\n\n**Path Parameters**:\n- `id` - Post ID to delete\n\n**Response**: Confirmation of deletion\n- Status: `200 OK`\n\n---\n\n## Environment Variables\n\nThis collection uses the following environment variables:\n\n| Variable | Description | Example Value |\n|----------|-------------|---------------|\n| `baseURL` | API base URL | `https://dummyjson.com` |\n| `accessToken` | JWT authentication token | Auto-set after login |\n| `author` | Global variable for author info | (Global variable) |\n\n## Collection Variables\n\n- **baseURL**: Base URL for all API requests (can be overridden by environment)\n\n## Testing Strategy\n\nThis collection includes comprehensive test coverage:\n\n### Positive Test Cases\n- Standard CRUD operations (Create, Read, Update, Delete)\n- Search and filtering functionality\n- Pagination and sorting\n- Authentication flows\n\n### Negative Test Cases\n- Invalid IDs (non-existent, negative, malformed)\n- Empty or invalid request bodies\n- Wrong endpoint paths\n- Invalid query parameters\n\n### Automated Tests\nMany requests include automated test scripts that:\n- Validate HTTP status codes\n- Check response structure\n- Verify data integrity\n- Store tokens and variables for subsequent requests\n\n## Usage Examples\n\n### Example Workflow 1: User Authentication & Product Browsing\n\n1. **Login** - `POST /auth/login` to get access token\n2. **Get Products** - `GET /products` to browse catalog\n3. **Search Products** - `GET /products/search?q=phone` to find specific items\n4. **Get Product Details** - `GET /products/1` for detailed information\n\n### Example Workflow 2: Shopping Cart Management\n\n1. **Login** - Authenticate first\n2. **Get User's Carts** - `GET /carts/user/5` to view existing carts\n3. **Update Cart** - `PUT /carts/1` to add/modify products\n4. **Get Cart Details** - `GET /carts/1` to verify changes\n\n### Example Workflow 3: User & Social Features\n\n1. **Get Users** - `GET /users` to browse users\n2. **Search Users** - `GET /users/search?q=John` to find specific users\n3. **Get User's Posts** - `GET /posts/user/5` to view their content\n4. **Get Post Comments** - `GET /posts/1/comments` to read discussions\n\n## Running the Collection\n\n### Using Postman Collection Runner\n1. Select the collection or specific folder\n2. Choose the appropriate environment (`anood env`)\n3. Click \"Run\" to execute all requests in sequence\n4. Review test results and response data\n\n### Using Postman CLI\n```bash\npostman collection run 51082963-7e7fceed-20b4-4cc4-81c7-9e02d03dfcbc -e 51082963-a8d28911-05c8-4913-b9d5-f08f32010cca\n```\n\n## API Response Format\n\nAll endpoints return JSON responses with consistent structure:\n\n**Success Response**:\n```json\n{\n  \"id\": 1,\n  \"data\": { ... },\n  \"status\": \"success\"\n}\n```\n\n**Error Response**:\n```json\n{\n  \"message\": \"Error description\",\n  \"status\": \"error\"\n}\n```\n\n## Notes\n\n- This collection uses the DummyJSON API (https://dummyjson.com) for testing purposes\n- All data is simulated and resets periodically\n- Negative test cases are prefixed with \"Negative-\" for easy identification\n- Bearer token authentication is used for protected endpoints\n- Test scripts automatically validate responses and manage environment variables\n\n## Support & Resources\n\n- **API Documentation**: https://dummyjson.com/docs\n- **Collection Maintainer**: anood Naimat\n- **Workspace**: anood Naimat's Workspace\n\n---\n\n*Last Updated: 2024*\n*Collection Version: 1.0*",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51082963",
+    "_collection_link": "https://go.postman.co/collection/51082963-7e7fceed-20b4-4cc4-81c7-9e02d03dfcbc?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth - Docs",
+      "item": [
+        {
+          "name": "Login User and get Tokens",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  " const res=pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Access token exists\", () => {\r",
+                  "   pm.expect(res).to.have.property(\"accessToken\");\r",
+                  "});\r",
+                  "pm.environment.set(\"accessToken\", res.accessToken)\r",
+                  "\r",
+                  "pm.test(\"Required fields exist\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"username\");\r",
+                  "    pm.expect(res).to.have.property(\"accessToken\");\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "pm.test('Response time is acceptable', function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n\r\n\r\n{\r\n  \"username\": \"emilys\",\r\n  \"password\": \"emilyspass\"\r\n  \r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/auth/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "# Login User and Get Tokens\n\n## Overview\n\nThis endpoint authenticates users with the DummyJSON API and returns access tokens for subsequent authenticated requests. Upon successful authentication, the user receives both an access token and refresh token, along with their profile information.\n\n---\n\n## Request Details\n\n### Endpoint\n- **URL**: `{{baseURL}}/auth/login`\n- **Method**: `POST`\n- **Content-Type**: `application/json`\n\n### Required Body Parameters\n\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| `username` | string | Yes | The user's username for authentication |\n| `password` | string | Yes | The user's password for authentication |\n\n### Example Request Body\n\n```json\n{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\"\n}\n```\n\n---\n\n## Response Structure\n\n### Success Response (200 OK)\n\nThe API returns a JSON object containing authentication tokens and user profile information:\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `accessToken` | string | JWT token used for authenticating subsequent API requests |\n| `refreshToken` | string | Token used to refresh the access token when it expires |\n| `id` | number | Unique identifier for the authenticated user |\n| `username` | string | The user's username |\n| `email` | string | The user's email address |\n| `firstName` | string | The user's first name |\n| `lastName` | string | The user's last name |\n| `gender` | string | The user's gender |\n| `image` | string | URL to the user's profile image |\n\n### Example Response\n\n```json\n{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"id\": 1,\n  \"username\": \"emilys\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"gender\": \"female\",\n  \"image\": \"https://dummyjson.com/icon/emilys/128\"\n}\n```\n\n---\n\n## Authentication Flow\n\n1. **Send Login Request**: Submit username and password to the `/auth/login` endpoint\n2. **Receive Tokens**: Upon successful authentication, receive `accessToken` and `refreshToken`\n3. **Automatic Storage**: The `accessToken` is automatically extracted from the response and stored in the `{{accessToken}}` environment variable via the post-response script\n4. **Use Token**: The stored token is then available for use in subsequent authenticated requests via the `{{accessToken}}` variable\n5. **Token Usage**: Include the access token in the `Authorization` header as `Bearer {{accessToken}}` for protected endpoints\n\n---\n\n## Automated Tests\n\nThis request includes comprehensive automated tests that validate the response:\n\n### Test Suite\n\n1. **Status Code Validation**\n   - Verifies the response status code is `200 OK`\n   - Ensures successful authentication\n\n2. **Access Token Validation**\n   - Checks that the `accessToken` field exists in the response\n   - Confirms the token is returned for authentication\n\n3. **Required Fields Validation**\n   - Validates presence of essential fields: `id`, `username`, `accessToken`\n   - Ensures complete user data is returned\n\n4. **Response Time Check**\n   - Verifies the API responds within 2000ms (2 seconds)\n   - Monitors performance and ensures acceptable response times\n\nAll tests run automatically after the request is sent, providing immediate feedback on the authentication process.\n\n---\n\n## Integration with Authentication Workflow\n\nThis endpoint is the **entry point** for the authentication workflow in this collection:\n\n1. **First Step**: This is typically the first request to execute when working with authenticated endpoints\n2. **Token Generation**: Generates the access token required for protected resources\n3. **Environment Setup**: Automatically configures the environment with the necessary authentication credentials\n4. **Subsequent Requests**: Other requests in the collection (like \"Get Current auth User\", \"Refresh auth Session\") depend on the token generated here\n5. **Session Management**: The refresh token can be used with the \"Refresh auth Session\" endpoint to obtain a new access token without re-authenticating\n\n---\n\n## Notes\n\n- **Test Credentials**: The example uses test credentials (`emilys` / `emilyspass`) from the DummyJSON demo API\n- **Token Expiration**: Access tokens may expire after a certain period; use the refresh token to obtain a new one\n- **Security**: In production environments, always use HTTPS and never hardcode credentials\n- **Environment Variables**: Ensure the `{{baseURL}}` variable is set to `https://dummyjson.com` in your active environment"
+          },
+          "response": []
+        },
+        {
+          "name": "Get auth User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"User content is correct\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"username\");\r",
+                  "   \r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/auth/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "# Get Authenticated User\n\n## Description\n\nThis endpoint retrieves the complete profile information of the currently authenticated user. It returns detailed user data including personal information, contact details, address, company information, and account metadata.\n\n## Authentication\n\n**Required**: Bearer Token\n\nThis endpoint requires authentication via a Bearer token in the Authorization header. The token must be obtained first by logging in through the `/auth/login` endpoint.\n\n```\nAuthorization: Bearer {{accessToken}}\n```\n\n## Request\n\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/auth/me`\n- **Headers**: \n  - `Authorization: Bearer {{accessToken}}`\n\n## Response\n\n### Success Response (200 OK)\n\nReturns a JSON object containing the authenticated user's complete profile:\n\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"maidenName\": \"Smith\",\n  \"age\": 29,\n  \"gender\": \"female\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"phone\": \"+81 965-431-3024\",\n  \"username\": \"emilys\",\n  \"birthDate\": \"1996-5-30\",\n  \"image\": \"https://dummyjson.com/icon/emilys/128\",\n  \"bloodGroup\": \"O-\",\n  \"height\": 193.24,\n  \"weight\": 63.16,\n  \"eyeColor\": \"Green\",\n  \"hair\": {\n    \"color\": \"Brown\",\n    \"type\": \"Curly\"\n  },\n  \"address\": {\n    \"address\": \"626 Main Street\",\n    \"city\": \"Phoenix\",\n    \"state\": \"Mississippi\",\n    \"stateCode\": \"MS\",\n    \"postalCode\": \"29112\",\n    \"coordinates\": {\n      \"lat\": -77.16213,\n      \"lng\": -92.084824\n    },\n    \"country\": \"United States\"\n  },\n  \"company\": {\n    \"department\": \"Engineering\",\n    \"name\": \"Dooley, Kozey and Cronin\",\n    \"title\": \"Sales Manager\",\n    \"address\": { ... }\n  },\n  \"bank\": {\n    \"cardExpire\": \"05/28\",\n    \"cardNumber\": \"3693233511855044\",\n    \"cardType\": \"Diners Club International\",\n    \"currency\": \"GBP\",\n    \"iban\": \"GB74MH2UZLR9TRPHYNU8F8\"\n  },\n  \"role\": \"admin\"\n}\n```\n\n### Response Fields\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `id` | integer | Unique user identifier |\n| `username` | string | User's login username |\n| `firstName` | string | User's first name |\n| `lastName` | string | User's last name |\n| `email` | string | User's email address |\n| `phone` | string | User's phone number |\n| `age` | integer | User's age |\n| `gender` | string | User's gender |\n| `birthDate` | string | User's date of birth |\n| `image` | string | URL to user's profile image |\n| `address` | object | User's address information including coordinates |\n| `company` | object | User's company and employment details |\n| `bank` | object | User's banking information |\n| `role` | string | User's role/permission level |\n\n## Use Cases\n\n1. **Profile Display**: Fetch user data to display on a profile page or dashboard\n2. **Session Validation**: Verify that the current authentication token is valid and retrieve associated user\n3. **Personalization**: Get user preferences and information to customize the application experience\n4. **Authorization Checks**: Retrieve user role and permissions for access control\n5. **User Context**: Obtain user details for logging, analytics, or audit trails\n\n## Example Usage\n\n### JavaScript (Fetch API)\n```javascript\nconst response = await fetch('https://dummyjson.com/auth/me', {\n  method: 'GET',\n  headers: {\n    'Authorization': `Bearer ${accessToken}`,\n    'Content-Type': 'application/json'\n  }\n});\n\nconst userData = await response.json();\nconsole.log(`Welcome, ${userData.firstName}!`);\n```\n\n### cURL\n```bash\ncurl -X GET 'https://dummyjson.com/auth/me' \\\n  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN'\n```\n\n## Notes\n\n- **Token Expiration**: If the Bearer token has expired, this endpoint will return an authentication error. Use the `/auth/refresh` endpoint to obtain a new token.\n- **Sensitive Data**: The response includes sensitive information like banking details. Ensure proper security measures when handling this data.\n- **Response Time**: Expected response time is under 2 seconds (validated by automated tests).\n- **Required Fields**: The response always includes `id` and `username` fields (validated by automated tests).\n- **No Parameters**: This endpoint does not accept any query parameters or request body.\n\n## Error Responses\n\n### 401 Unauthorized\nReturned when the Bearer token is missing, invalid, or expired.\n\n```json\n{\n  \"message\": \"Authentication required\"\n}\n```\n\n### 403 Forbidden\nReturned when the token is valid but lacks necessary permissions.\n\n## Related Endpoints\n\n- `POST /auth/login` - Obtain access token\n- `POST /auth/refresh` - Refresh expired token\n- `PUT /users/{userId}` - Update user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh auth Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Access token is present\", () => pm.expect(jsonData.accessToken).to.not.be.null);\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"refreshToken\": \"{{accessToken}}\",\r\n  \"expiresInMins\": 30\r\n}\r\n\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/auth/refresh",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "# Refresh Authentication Session\n\n## Overview\n\nThis endpoint refreshes an existing authentication session by generating a new access token and refresh token pair. Use this endpoint when your current access token is about to expire or has expired, allowing you to maintain an authenticated session without requiring the user to log in again.\n\n---\n\n## Endpoint Details\n\n**Method:** `POST`  \n**Path:** `{{baseURL}}/auth/refresh`\n\n---\n\n## Request Body\n\nThe request requires a JSON payload with the following parameters:\n\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| `refreshToken` | string | Yes | The current valid refresh token (or access token) used to generate new tokens |\n| `expiresInMins` | integer | Yes | The desired expiration time for the new access token in minutes (e.g., 30) |\n\n### Example Request Body\n\n```json\n{\n  \"refreshToken\": \"{{accessToken}}\",\n  \"expiresInMins\": 30\n}\n```\n\n---\n\n## Response Format\n\n### Success Response (200 OK)\n\nReturns a JSON object containing new authentication tokens:\n\n```json\n{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}\n```\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `accessToken` | string | New JWT access token for authenticated requests |\n| `refreshToken` | string | New refresh token for future token refresh operations |\n\n---\n\n## Authentication Requirements\n\n- Requires a valid refresh token (or access token) in the request body\n- No additional authentication headers required for this endpoint\n- The provided token must not be expired or invalid\n\n---\n\n## Use Cases\n\n### When to Use This Endpoint\n\n1. **Token Expiration Prevention**: Proactively refresh tokens before they expire to maintain uninterrupted access\n2. **Expired Token Recovery**: Obtain new tokens when your access token has expired\n3. **Session Extension**: Extend user sessions without requiring re-authentication\n4. **Security Best Practices**: Regularly rotate tokens to minimize security risks\n\n### Typical Workflow\n\n```\n1. User logs in → Receives accessToken and refreshToken\n2. User makes authenticated requests using accessToken\n3. Before accessToken expires → Call /auth/refresh\n4. Receive new accessToken and refreshToken\n5. Update stored tokens and continue making requests\n```\n\n---\n\n## Important Notes\n\n### Token Expiration\n\n- Access tokens have a limited lifespan defined by `expiresInMins`\n- The default expiration is typically 30 minutes\n- Refresh tokens generally have a longer lifespan than access tokens\n- Always store the new tokens returned from this endpoint\n\n### Best Practices\n\n- **Automatic Refresh**: Implement automatic token refresh logic in your application\n- **Token Storage**: Securely store both access and refresh tokens (use environment variables in Postman)\n- **Error Handling**: If refresh fails, redirect users to login again\n- **Token Rotation**: Update both tokens after each refresh for enhanced security\n\n### Error Scenarios\n\nIf the refresh token is invalid or expired, you will receive an error response and must authenticate again using the `/auth/login` endpoint.\n\n---\n\n## Related Endpoints\n\n- **Login**: `POST {{baseURL}}/auth/login` - Initial authentication to obtain tokens\n- **Get Current User**: `GET {{baseURL}}/auth/me` - Verify token validity and get user info"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Refresh auth Session Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 401 or 403\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response has error message\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.message).to.exist;\r",
+                  "\tpm.expect(jsonData.message).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// {\r\n//   \"refreshToken\": \"\",\r\n//   \"expiresInMins\": 30\r\n// }\r\n{\r\n  \"refreshToken\": \"expired_invalid_token_xyz\",\r\n  \"expiresInMins\": 30\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/auth/refresh",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "# Negative Test: Refresh Authentication Session with Invalid Token\n\n## Overview\nThis is a **negative test case** designed to validate the API's error handling when attempting to refresh an authentication session using an invalid or expired refresh token.\n\n## Purpose\nTests the authentication refresh endpoint's ability to properly reject and handle invalid refresh token requests, ensuring the API maintains security standards by not allowing unauthorized session refreshes.\n\n## Expected Behavior\n- **Status Code**: `401 Unauthorized` or `403 Forbidden`\n- **Response Body**: Should contain an error message indicating the token is invalid\n- **Security**: The API must reject the request and not generate a new access token\n\n## Request Details\n\n### Endpoint\n`POST {{baseURL}}/auth/refresh`\n\n### Request Body Parameters\n| Parameter | Type | Value | Description |\n|-----------|------|-------|-------------|\n| `refreshToken` | string | `\"expired_invalid_token_xyz\"` | An intentionally invalid/expired refresh token |\n| `expiresInMins` | integer | `30` | Requested token expiration time in minutes |\n\n### Test Scenario\nThis request deliberately sends an invalid refresh token (`expired_invalid_token_xyz`) to verify the API properly rejects unauthorized refresh attempts.\n\n## Test Validations\n\nThe following automated tests are executed on the response:\n\n1. **Status Code Validation**: Verifies the response status code is either `401` or `403`\n2. **Error Message Validation**: Confirms the response contains an error message field that is a string\n\n## Use Case & Importance\n\n### Security Validation\nThis negative test is critical for API security because it:\n\n- **Prevents Token Forgery**: Ensures attackers cannot use fabricated tokens to gain unauthorized access\n- **Validates Token Expiration**: Confirms expired tokens are properly rejected\n- **Error Handling**: Verifies appropriate error messages are returned to clients\n- **Session Security**: Protects against session hijacking attempts\n\n### Real-World Scenarios\nThis test simulates situations where:\n- A user's refresh token has expired\n- An attacker attempts to use a stolen or guessed token\n- A client application has cached an old/invalid token\n- Network issues caused token corruption\n\nBy validating proper rejection of invalid tokens, this test ensures the authentication system maintains its security integrity and provides clear feedback for troubleshooting legitimate authentication issues."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products - Docs",
+      "item": [
+        {
+          "name": "Get all Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  " const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Products content is correct\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"products\");\r",
+                  "    pm.expect(res.products).to.be.an(\"array\");\r",
+                  "   \r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "pm.test('Response time is acceptable', function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "})\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products"
+              ]
+            },
+            "description": "# Get All Products\n\n## Overview\n\nThis endpoint retrieves a complete list of all products available in the e-commerce catalog. It returns comprehensive product information including pricing, inventory, specifications, and customer reviews.\n\n## Request Details\n\n**Method:** `GET`  \n**URL:** `{{baseURL}}/products`  \n**Authentication:** Not required  \n**Query Parameters:** None (base endpoint)\n\n### Optional Query Parameters\n\nWhile the base endpoint returns all products, you can use the following query parameters to customize the response:\n\n- `limit` - Limit the number of products returned (e.g., `?limit=10`)\n- `skip` - Skip a number of products for pagination (e.g., `?skip=10`)\n- `select` - Select specific fields to return (e.g., `?select=title,price`)\n- `sortBy` - Sort products by a specific field (e.g., `?sortBy=price`)\n- `order` - Sort order: `asc` or `desc` (e.g., `?order=asc`)\n\n## Response Structure\n\nThe endpoint returns a JSON object with the following structure:\n\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"description\": \"Product description\",\n      \"category\": \"Category name\",\n      \"price\": 99.99,\n      \"discountPercentage\": 10.5,\n      \"rating\": 4.5,\n      \"stock\": 100,\n      \"tags\": [\"tag1\", \"tag2\"],\n      \"brand\": \"Brand Name\",\n      \"sku\": \"SKU-CODE\",\n      \"weight\": 5,\n      \"dimensions\": {\n        \"width\": 10.5,\n        \"height\": 15.2,\n        \"depth\": 8.3\n      },\n      \"warrantyInformation\": \"1 year warranty\",\n      \"shippingInformation\": \"Ships in 1-2 business days\",\n      \"availabilityStatus\": \"In Stock\",\n      \"reviews\": [\n        {\n          \"rating\": 5,\n          \"comment\": \"Great product!\",\n          \"date\": \"2025-04-30T09:41:02.053Z\",\n          \"reviewerName\": \"John Doe\",\n          \"reviewerEmail\": \"john.doe@example.com\"\n        }\n      ],\n      \"returnPolicy\": \"30 days return policy\",\n      \"minimumOrderQuantity\": 1,\n      \"meta\": {\n        \"createdAt\": \"2025-04-30T09:41:02.053Z\",\n        \"updatedAt\": \"2025-04-30T09:41:02.053Z\",\n        \"barcode\": \"1234567890123\",\n        \"qrCode\": \"https://example.com/qr-code.png\"\n      },\n      \"images\": [\"https://example.com/image1.jpg\"],\n      \"thumbnail\": \"https://example.com/thumbnail.jpg\"\n    }\n  ],\n  \"total\": 100,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n### Response Fields\n\n- **products** (array): Array of product objects\n- **total** (number): Total number of products available\n- **skip** (number): Number of products skipped (for pagination)\n- **limit** (number): Maximum number of products returned\n\n### Product Object Fields\n\n- **id**: Unique product identifier\n- **title**: Product name\n- **description**: Detailed product description\n- **category**: Product category\n- **price**: Product price in USD\n- **discountPercentage**: Current discount percentage\n- **rating**: Average customer rating (0-5)\n- **stock**: Available inventory quantity\n- **tags**: Array of product tags for categorization\n- **brand**: Product brand name\n- **sku**: Stock Keeping Unit identifier\n- **weight**: Product weight\n- **dimensions**: Physical dimensions (width, height, depth)\n- **warrantyInformation**: Warranty details\n- **shippingInformation**: Shipping time and details\n- **availabilityStatus**: Current availability status\n- **reviews**: Array of customer reviews with ratings and comments\n- **returnPolicy**: Return policy information\n- **minimumOrderQuantity**: Minimum quantity required for purchase\n- **meta**: Metadata including creation date, barcode, and QR code\n- **images**: Array of product image URLs\n- **thumbnail**: Main product thumbnail URL\n\n## Example Use Cases\n\n### 1. Display Product Catalog\nRetrieve all products to display in a product listing page or catalog view.\n\n### 2. Inventory Management\nFetch complete product list to check stock levels and availability across all items.\n\n### 3. Data Analysis\nPull all product data for analytics, reporting, or business intelligence purposes.\n\n### 4. Search Index Building\nRetrieve all products to build or update a search index for the e-commerce platform.\n\n### 5. Product Comparison\nGet complete product information to enable comparison features across multiple products.\n\n## Response Validation\n\nThis endpoint includes automated tests that verify:\n- ✅ Status code is 200 (OK)\n- ✅ Response contains a `products` property\n- ✅ `products` is an array\n- ✅ Response time is under 2000ms\n\n## Notes\n\n- **Performance**: This endpoint returns all products by default. For large catalogs, consider using pagination parameters (`limit` and `skip`) to improve performance.\n- **No Authentication Required**: This is a public endpoint that doesn't require authentication.\n- **Rate Limiting**: Be mindful of API rate limits when making frequent requests.\n- **Caching**: Consider implementing client-side caching for product data to reduce API calls.\n- **Related Endpoints**: \n  - Use `/products/{id}` to get a single product by ID\n  - Use `/products/search?q={query}` to search for specific products\n  - Use `/products/category/{category}` to filter by category\n  - Use `/products/categories` to get all available categories\n\n## Status Codes\n\n- **200 OK**: Successfully retrieved products\n- **500 Internal Server Error**: Server error occurred\n\n## Example Request\n\n```bash\nGET {{baseURL}}/products\n```\n\n## Example Response (Truncated)\n\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Essence Mascara Lash Princess\",\n      \"category\": \"beauty\",\n      \"price\": 9.99,\n      \"rating\": 2.56,\n      \"stock\": 99\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Eyeshadow Palette with Mirror\",\n      \"category\": \"beauty\",\n      \"price\": 19.99,\n      \"rating\": 2.86,\n      \"stock\": 34\n    }\n  ],\n  \"total\": 194,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Get a Single Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "pm.test('Response time is acceptable', function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/{{productId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "## Purpose\nRetrieves detailed information about a specific product by its unique identifier.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products/{{productId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `productId` (required) - The unique identifier of the product to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"id\": 1,\n  \"title\": \"Product Name\",\n  \"description\": \"Product description\",\n  \"price\": 549,\n  \"discountPercentage\": 12.96,\n  \"rating\": 4.69,\n  \"stock\": 94,\n  \"brand\": \"Brand Name\",\n  \"category\": \"Category Name\",\n  \"thumbnail\": \"image_url\",\n  \"images\": [\"image1_url\", \"image2_url\"]\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies product object structure and required fields\n- Checks data types for numeric and string fields"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Response has products array\", () => {\r",
+                  "    pm.expect(res.products).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Search result is not empty\", () => {\r",
+                  "    pm.expect(res.products.length).to.be.greaterThan(0);\r",
+                  "});\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"emilys\",\r\n    \"password\": \"emilyspass\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/search?q=phone",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "phone"
+                }
+              ]
+            },
+            "description": "## Purpose\nSearches for products based on a query string, returning all products that match the search criteria.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products/search?q=phone`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `q` (required) - The search query string to find matching products\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"description\": \"Product description\",\n      \"price\": 549,\n      \"category\": \"Category Name\",\n      ...\n    }\n  ],\n  \"total\": 4,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies products array exists\n- Checks pagination metadata (total, skip, limit)\n- Confirms search results match query criteria"
+          },
+          "response": []
+        },
+        {
+          "name": "Limit and Skip Product Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  " const res = pm.response.json();",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products?limit=10&skip=10&select=title,price",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "skip",
+                  "value": "10"
+                },
+                {
+                  "key": "select",
+                  "value": "title,price"
+                }
+              ]
+            },
+            "description": "## Purpose\nRetrieves a paginated list of products with specific fields selected, demonstrating pagination and field filtering capabilities.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products?limit=10&skip=10&select=title,price`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `limit` (optional) - Number of products to return (default: 30)\n- `skip` (optional) - Number of products to skip for pagination (default: 0)\n- `select` (optional) - Comma-separated list of fields to include in response\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"products\": [\n    {\n      \"id\": 11,\n      \"title\": \"Product Name\",\n      \"price\": 549\n    }\n  ],\n  \"total\": 194,\n  \"skip\": 10,\n  \"limit\": 10\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies correct number of products returned (limit)\n- Checks pagination offset (skip)\n- Confirms only selected fields are present in response"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Limit and Skip Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 for invalid limit or skip\", () => {\r",
+                  "    pm.expect(pm.response.code).to.equal( 400);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 400) {\r",
+                  "    pm.test(\"Error message is returned\", () => {\r",
+                  "        const res = pm.response.json();\r",
+                  "        pm.expect(res).to.have.property(\"message\");\r",
+                  "\t\tpm.expect(res.message).to.be.a(\"string\");\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products?limit=-10&skip=abc&select=title,price",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "-10"
+                },
+                {
+                  "key": "skip",
+                  "value": "abc"
+                },
+                {
+                  "key": "select",
+                  "value": "title,price"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sort Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(),()=>{\r",
+                  "    pm.expect(res.products).to.be.an(\"array\").that.is.not.empty;\r",
+                  "\r",
+                  "}\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"emilys\",\r\n    \"password\": \"emilyspass\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/products?sortBy=title&order=asc",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "title"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "## Purpose\nRetrieves all products sorted by a specific field in ascending or descending order.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products?sortBy=title&order=asc`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `sortBy` (optional) - Field name to sort by (e.g., title, price, rating)\n- `order` (optional) - Sort order: `asc` (ascending) or `desc` (descending)\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"A Product Name\",\n      \"price\": 549,\n      ...\n    }\n  ],\n  \"total\": 194,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies products array is sorted correctly\n- Checks sort order matches requested order (asc/desc)\n- Confirms all product fields are present"
+          },
+          "response": []
+        },
+        {
+          "name": "Get all Product Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"emilys\",\r\n    \"password\": \"emilyspass\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/categories",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "categories"
+              ]
+            },
+            "description": "## Purpose\nRetrieves a complete list of all available product categories in the system.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products/categories`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n- No parameters required\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n[\n  {\n    \"slug\": \"beauty\",\n    \"name\": \"Beauty\",\n    \"url\": \"https://dummyjson.com/products/category/beauty\"\n  },\n  {\n    \"slug\": \"fragrances\",\n    \"name\": \"Fragrances\",\n    \"url\": \"https://dummyjson.com/products/category/fragrances\"\n  }\n]\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies response is an array\n- Checks each category has required fields (slug, name, url)\n- Confirms categories are not empty"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Category list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  " const res = pm.response.json();",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/category-list",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "category-list"
+              ]
+            },
+            "description": "## Purpose\nRetrieves a simplified list of product category names/slugs without additional metadata.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products/category-list`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n- No parameters required\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n[\n  \"beauty\",\n  \"fragrances\",\n  \"furniture\",\n  \"groceries\",\n  \"home-decoration\",\n  \"kitchen-accessories\"\n]\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies response is an array of strings\n- Checks array contains category names\n- Confirms list is not empty"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Get Product Category list Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response has error or empty products array\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.message || jsonData.products).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"Error message exists\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"message\"),\r",
+                  "\tpm.expect(res.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/category-array",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "category-array"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Products By a Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"emilys\",\r\n    \"password\": \"emilyspass\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/category/smartphones",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "category",
+                "smartphones"
+              ]
+            },
+            "description": "## Purpose\nRetrieves all products that belong to a specific category.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/products/category/smartphones`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `category` (required) - The category slug to filter products by (e.g., smartphones, laptops, beauty)\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"category\": \"smartphones\",\n      \"price\": 549,\n      ...\n    }\n  ],\n  \"total\": 5,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all products belong to requested category\n- Checks products array structure\n- Confirms pagination metadata is present"
+          },
+          "response": []
+        },
+        {
+          "name": "Add a New Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", () => pm.response.to.have.status(201));\r",
+                  "\r",
+                  "pm.test(\"Product created successfully\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res.title).to.exist;\r",
+                  "});\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"All required fields exist\", function() {\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"title\");\r",
+                  "    pm.expect(res).to.have.property(\"price\");\r",
+                  "    pm.expect(res).to.have.property(\"description\");\r",
+                  "    pm.expect(res).to.have.property(\"category\");\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "pm.test('Response time is acceptable', function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// {\r\n//   \"title\": \"BMW Pencil\"\r\n  \r\n// }\r\n{\r\n  \"title\": \"BMW Pencil\",\r\n  \"price\": 100,\r\n  \"description\": \"High quality pencil\",\r\n  \"category\": \"stationery\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "add"
+              ]
+            },
+            "description": "## Purpose\nCreates a new product in the system with the provided product details.\n\n## Method & Endpoint\n- **Method**: `POST`\n- **Endpoint**: `{{baseURL}}/products/add`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Request Body (JSON)\n```json\n{\n  \"title\": \"Product Name\",\n  \"description\": \"Product description\",\n  \"price\": 999,\n  \"discountPercentage\": 10,\n  \"rating\": 4.5,\n  \"stock\": 50,\n  \"brand\": \"Brand Name\",\n  \"category\": \"Category Name\",\n  \"thumbnail\": \"image_url\"\n}\n```\n\n**Required Fields**:\n- `title` - Product name\n- `price` - Product price\n\n**Optional Fields**:\n- `description`, `discountPercentage`, `rating`, `stock`, `brand`, `category`, `thumbnail`\n\n## Expected Response\n- **Status Code**: `201 Created`\n- **Response Structure**: Returns the created product with an assigned ID\n```json\n{\n  \"id\": 195,\n  \"title\": \"Product Name\",\n  \"price\": 999,\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 201\n- Verifies product ID is assigned\n- Checks all submitted fields are returned\n- Confirms product creation timestamp"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Add a New Product-Invalid Payload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"API should not accept non-numeric price\", function () {\r",
+                  "pm.expect(pm.response.code).to.not.eql\t(200)\r",
+                  "\r",
+                  "\t\r",
+                  "\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n\t\"price\": \"abd\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Product - Random Test Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is as expected\", function () {\r",
+                  "    const expectedStatus = pm.iterationData.get(\"expectedStatus\");\r",
+                  "    pm.response.to.have.status(expectedStatus);\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\":\"{{title}}\",\r\n  \"description\": \"{{description}}\",\r\n  \"price\": {{price}}\r\n  \r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "add"
+              ]
+            },
+            "description": "## Purpose\nCreates a new product using randomly generated test data to validate the product creation endpoint with dynamic values.\n\n## Method & Endpoint\n- **Method**: `POST`\n- **Endpoint**: `{{baseURL}}/products/add`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Request Body (JSON)\nUses dynamically generated random data:\n```json\n{\n  \"title\": \"{{$randomProductName}}\",\n  \"description\": \"{{$randomProductAdjective}} {{$randomProduct}}\",\n  \"price\": {{$randomPrice}},\n  \"discountPercentage\": {{$randomInt}},\n  \"rating\": 4.5,\n  \"stock\": {{$randomInt}},\n  \"brand\": \"{{$randomCompanyName}}\",\n  \"category\": \"{{$randomProductCategory}}\",\n  \"thumbnail\": \"{{$randomImageUrl}}\"\n}\n```\n\n## Expected Response\n- **Status Code**: `201 Created`\n- **Response Structure**: Returns the created product with random data and assigned ID\n```json\n{\n  \"id\": 195,\n  \"title\": \"Random Product Name\",\n  \"price\": 123,\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 201\n- Verifies product ID is assigned\n- Checks random data is properly saved\n- Confirms API handles dynamic test data correctly"
+          },
+          "response": []
+        },
+        {
+          "name": "Update a Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"iPhone Galaxy +1\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/{{productId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "## Purpose\nUpdates an existing product's information by its unique identifier.\n\n## Method & Endpoint\n- **Method**: `PUT`\n- **Endpoint**: `{{baseURL}}/products/{{productId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `productId` (required) - The unique identifier of the product to update\n\n### Request Body (JSON)\n```json\n{\n  \"title\": \"Updated Product Name\",\n  \"price\": 1299,\n  \"description\": \"Updated description\",\n  \"stock\": 75\n}\n```\n\n**Note**: Only include fields you want to update. Unspecified fields remain unchanged.\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the updated product with all fields\n```json\n{\n  \"id\": 1,\n  \"title\": \"Updated Product Name\",\n  \"price\": 1299,\n  \"description\": \"Updated description\",\n  \"stock\": 75,\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies updated fields match request\n- Checks product ID remains unchanged\n- Confirms other fields are preserved"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Update a Product Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response contains not found\", function () {\r",
+                  "    pm.expect(pm.response.text().toLowerCase()).to.include(\"not found\");\r",
+                  "});\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"Error message exists\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"message\"),\r",
+                  "\tpm.expect(res.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"iPhone Galaxy +1\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/products/-{{productId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "-{{productId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\" product Deleted successfully \" , function(){\r",
+                  "\tpm.expect(pm.response.code).to.eql(200)\r",
+                  "\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/products/{{productId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "## Purpose\nDeletes a specific product from the system by its unique identifier.\n\n## Method & Endpoint\n- **Method**: `DELETE`\n- **Endpoint**: `{{baseURL}}/products/{{productId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `productId` (required) - The unique identifier of the product to delete\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the deleted product information with deletion confirmation\n```json\n{\n  \"id\": 1,\n  \"title\": \"Product Name\",\n  \"price\": 549,\n  \"isDeleted\": true,\n  \"deletedOn\": \"2024-01-01T12:00:00.000Z\",\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies `isDeleted` flag is true\n- Checks deletion timestamp is present\n- Confirms deleted product details are returned"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Carts - Docs",
+      "item": [
+        {
+          "name": "Get all Carts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Required fields exist in first cart\", function() {",
+                  "    pm.expect(res.carts[0]).to.have.property(\"products\");",
+                  "    pm.expect(res.carts[0]).to.have.property(\"total\");",
+                  "});",
+                  "",
+                  "",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/carts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts"
+              ]
+            },
+            "description": "## Purpose\nRetrieves a paginated list of all shopping carts in the system.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/carts`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n- No required parameters\n- Optional query parameters: `limit`, `skip` for pagination\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"carts\": [\n    {\n      \"id\": 1,\n      \"products\": [\n        {\n          \"id\": 1,\n          \"title\": \"Product Name\",\n          \"price\": 549,\n          \"quantity\": 2,\n          \"total\": 1098\n        }\n      ],\n      \"total\": 1098,\n      \"discountedTotal\": 985,\n      \"userId\": 1,\n      \"totalProducts\": 1,\n      \"totalQuantity\": 2\n    }\n  ],\n  \"total\": 20,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies carts array structure\n- Checks pagination metadata\n- Confirms cart totals and product details"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Get all Carts-Wrong method",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Wrong method correctly returns 404 or 405 \", ()=>{\r",
+                  "\tpm.expect(pm.response.code).to.be.oneOf([404,405])\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/carts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a Single Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})",
+                  "",
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test(\"Required fields exist in cart\", function() {",
+                  "    pm.expect(res).to.have.property(\"id\");",
+                  "    pm.expect(res).to.have.property(\"products\");",
+                  "    pm.expect(res).to.have.property(\"total\");",
+                  "    pm.expect(res).to.have.property(\"discountedTotal\");",
+                  "    pm.expect(res).to.have.property(\"userId\");",
+                  "    pm.expect(res).to.have.property(\"totalProducts\");",
+                  "    pm.expect(res).to.have.property(\"totalQuantity\");",
+                  "});",
+                  "",
+                  "",
+                  "pm.test(\"Products array is not empty\", function() {",
+                  "    pm.expect(res.products).to.be.an(\"array\").that.is.not.empty;",
+                  "});",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/carts/{{cartId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "{{cartId}}"
+              ]
+            },
+            "description": "## Purpose\nRetrieves detailed information about a specific shopping cart by its unique identifier.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/carts/{{cartId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `cartId` (required) - The unique identifier of the cart to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"id\": 1,\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"price\": 549,\n      \"quantity\": 2,\n      \"total\": 1098,\n      \"discountPercentage\": 12.96,\n      \"discountedTotal\": 956\n    }\n  ],\n  \"total\": 1098,\n  \"discountedTotal\": 956,\n  \"userId\": 1,\n  \"totalProducts\": 1,\n  \"totalQuantity\": 2\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies cart ID matches request\n- Checks products array structure\n- Confirms total calculations are correct"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Carts by a User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/carts/user/20",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "user",
+                "20"
+              ]
+            },
+            "description": "## Purpose\nRetrieves all shopping carts associated with a specific user.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/carts/user/20`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user whose carts to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"carts\": [\n    {\n      \"id\": 1,\n      \"products\": [\n        {\n          \"id\": 1,\n          \"title\": \"Product Name\",\n          \"price\": 549,\n          \"quantity\": 2,\n          \"total\": 1098\n        }\n      ],\n      \"total\": 1098,\n      \"discountedTotal\": 985,\n      \"userId\": 20,\n      \"totalProducts\": 1,\n      \"totalQuantity\": 2\n    }\n  ],\n  \"total\": 3,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all carts belong to specified user\n- Checks carts array structure\n- Confirms user ID matches in all carts"
+          },
+          "response": []
+        },
+        {
+          "name": "Add to Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", () => pm.response.to.have.status(201));\r",
+                  "var res = pm.response.json();\r",
+                  "pm.test(\"Response has userId\", () => {\r",
+                  "\r",
+                  "    pm.expect(res.userId).to.eql(1);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Products have id and quantity\", () => {\r",
+                  "    res.products.forEach(p => {\r",
+                  "        pm.expect(p).to.have.property(\"id\");\r",
+                  "        pm.expect(p).to.have.property(\"quantity\");\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"userId\": 1,\r\n  \"products\": [\r\n    {\r\n      \"id\": 144,\r\n      \"quantity\": 4\r\n    },\r\n    {\r\n      \"id\": 98,\r\n      \"quantity\": 1\r\n    }\r\n  ]\r\n}\r\n\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/carts/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "add"
+              ]
+            },
+            "description": "## Purpose\nCreates a new shopping cart or adds products to an existing cart for a user.\n\n## Method & Endpoint\n- **Method**: `POST`\n- **Endpoint**: `{{baseURL}}/carts/add`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Request Body (JSON)\n```json\n{\n  \"userId\": 1,\n  \"products\": [\n    {\n      \"id\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"id\": 5,\n      \"quantity\": 1\n    }\n  ]\n}\n```\n\n**Required Fields**:\n- `userId` - The user ID who owns the cart\n- `products` - Array of product objects with `id` and `quantity`\n\n## Expected Response\n- **Status Code**: `201 Created`\n- **Response Structure**: Returns the created cart with calculated totals\n```json\n{\n  \"id\": 21,\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"price\": 549,\n      \"quantity\": 2,\n      \"total\": 1098\n    }\n  ],\n  \"total\": 1098,\n  \"discountedTotal\": 985,\n  \"userId\": 1,\n  \"totalProducts\": 2,\n  \"totalQuantity\": 3\n}\n```\n\n## Tests Included\n- Validates response status code is 201\n- Verifies cart ID is assigned\n- Checks product totals are calculated correctly\n- Confirms all products are added to cart"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Add a Cart Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"BUGT quantity=0 automaticalle corrected to 1 \"),() =>{\r",
+                  "\tpm.expect(pm.response.json().products[0].quantity).to.eql(0)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n\r\n\r\n{\r\n  \"userId\": 1,\r\n  \"products\": [\r\n    {\r\n      \"id\": 144,\r\n      \"quantity\": 0\r\n    }\r\n    \r\n  ]\r\n}\r\n\r\n\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/carts/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"merge\": true,\r\n  \"products\": [\r\n    { \"id\": 1, \"quantity\": 1 }\r\n  ]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/carts/{{cartId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "{{cartId}}"
+              ]
+            },
+            "description": "## Purpose\nUpdates an existing shopping cart's products and quantities.\n\n## Method & Endpoint\n- **Method**: `PUT`\n- **Endpoint**: `{{baseURL}}/carts/{{cartId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `cartId` (required) - The unique identifier of the cart to update\n\n### Request Body (JSON)\n```json\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"quantity\": 3\n    },\n    {\n      \"id\": 10,\n      \"quantity\": 1\n    }\n  ]\n}\n```\n\n**Note**: The products array replaces the existing cart contents.\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the updated cart with recalculated totals\n```json\n{\n  \"id\": 1,\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"price\": 549,\n      \"quantity\": 3,\n      \"total\": 1647\n    }\n  ],\n  \"total\": 1647,\n  \"discountedTotal\": 1480,\n  \"userId\": 1,\n  \"totalProducts\": 2,\n  \"totalQuantity\": 4\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies cart ID remains unchanged\n- Checks updated quantities and totals\n- Confirms product list is updated correctly"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "pm.test(\"Deleted cart has correct id\", () => {\r",
+                  "    pm.expect(jsonData.id).to.eql(11);\r",
+                  "});\r",
+                  "pm.test(\"Response contains isDeleted flag\", () => {\r",
+                  "    pm.expect(jsonData.isDeleted).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/carts/{{cartId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "{{cartId}}"
+              ]
+            },
+            "description": "## Purpose\nDeletes a specific shopping cart from the system by its unique identifier.\n\n## Method & Endpoint\n- **Method**: `DELETE`\n- **Endpoint**: `{{baseURL}}/carts/{{cartId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `cartId` (required) - The unique identifier of the cart to delete\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the deleted cart information with deletion confirmation\n```json\n{\n  \"id\": 1,\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"Product Name\",\n      \"price\": 549,\n      \"quantity\": 2,\n      \"total\": 1098\n    }\n  ],\n  \"total\": 1098,\n  \"discountedTotal\": 985,\n  \"userId\": 1,\n  \"totalProducts\": 1,\n  \"totalQuantity\": 2,\n  \"isDeleted\": true,\n  \"deletedOn\": \"2024-01-01T12:00:00.000Z\"\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies `isDeleted` flag is true\n- Checks deletion timestamp is present\n- Confirms deleted cart details are returned"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Delete a Cart Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Invalid cart id handled correctly\", () => {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Response body exists\", () => {\r",
+                  "    pm.expect(res).to.be.an(\"object\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/carts/abcd",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "carts",
+                "abcd"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users - Docs",
+      "item": [
+        {
+          "name": "Get all Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "pm.test(\"Response time is acceptable\", function () {\r",
+                  "\tpm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "## Purpose\nRetrieves a paginated list of all users in the system.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n- No required parameters\n- Optional query parameters: `limit`, `skip` for pagination\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"Emily\",\n      \"lastName\": \"Johnson\",\n      \"email\": \"emily.johnson@x.dummyjson.com\",\n      \"username\": \"emilys\",\n      \"age\": 28,\n      \"gender\": \"female\",\n      \"phone\": \"+81 965-431-3024\",\n      \"birthDate\": \"1996-5-30\",\n      \"image\": \"https://dummyjson.com/icon/emilys/128\",\n      \"address\": {...},\n      \"company\": {...}\n    }\n  ],\n  \"total\": 208,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies users array structure\n- Checks pagination metadata\n- Confirms user object contains required fields"
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "pm.test(\"Response time is acceptable\", function () {\r",
+                  "\tpm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"emilys\",\r\n  \"password\": \"emilyspass\",\r\n  \"expiresInMins\": 30\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/auth/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "## Purpose\nAuthenticates a user with username and password, returning an access token for subsequent authenticated requests.\n\n## Method & Endpoint\n- **Method**: `POST`\n- **Endpoint**: `{{baseURL}}/auth/login`\n\n## Authentication\n- **Required**: No (this endpoint provides authentication)\n\n## Parameters\n### Request Body (JSON)\n```json\n{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\"\n}\n```\n\n**Required Fields**:\n- `username` - User's username\n- `password` - User's password\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"id\": 1,\n  \"username\": \"emilys\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"gender\": \"female\",\n  \"image\": \"https://dummyjson.com/icon/emilys/128\",\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies access token is present\n- Stores token in environment variable `{{accessToken}}`\n- Checks user details are returned"
+          },
+          "response": []
+        },
+        {
+          "name": "Login User - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Invalid credentials handled\", () => {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);\r",
+                  "});\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"Error message exists\", () => {\r",
+                  "    pm.expect(res).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"anood\",\r\n  \"password\": \"emilyspass\",\r\n  \"expiresInMins\": 30\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/user/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "user",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current auth User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "pm.test(\"Response time is acceptable\", function () {\r",
+                  "\tpm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/auth/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "## Purpose\nRetrieves the profile information of the currently authenticated user based on the provided access token.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/auth/me`\n\n## Authentication\n- **Required**: Yes\n- **Type**: Bearer Token\n- **Header**: `Authorization: Bearer {{accessToken}}`\n\n## Parameters\n- No parameters required\n- Authentication token must be provided in Authorization header\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"username\": \"emilys\",\n  \"age\": 28,\n  \"gender\": \"female\",\n  \"phone\": \"+81 965-431-3024\",\n  \"birthDate\": \"1996-5-30\",\n  \"image\": \"https://dummyjson.com/icon/emilys/128\",\n  \"address\": {...},\n  \"company\": {...}\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies authenticated user details are returned\n- Checks all user profile fields are present\n- Confirms token authentication is working"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Get Current auth User Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Invalid token\", () => {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"Error message exists\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"message\"),\r",
+                  "\tpm.expect(res.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "123456",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/user/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a Single User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Required fields exist\", function() {",
+                  "    pm.expect(res).to.have.property(\"id\");",
+                  "    pm.expect(res).to.have.property(\"firstName\");",
+                  "    pm.expect(res).to.have.property(\"lastName\");",
+                  "    pm.expect(res).to.have.property(\"username\");",
+                  "    pm.expect(res).to.have.property(\"email\");",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "## Purpose\nRetrieves detailed information about a specific user by their unique identifier.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/{{userId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"username\": \"emilys\",\n  \"age\": 28,\n  \"gender\": \"female\",\n  \"phone\": \"+81 965-431-3024\",\n  \"birthDate\": \"1996-5-30\",\n  \"image\": \"https://dummyjson.com/icon/emilys/128\",\n  \"address\": {\n    \"address\": \"626 Main Street\",\n    \"city\": \"Phoenix\",\n    \"state\": \"Mississippi\",\n    \"country\": \"United States\",\n    \"postalCode\": \"29112\"\n  },\n  \"company\": {\n    \"name\": \"Dooley and Sons\",\n    \"title\": \"Sales Manager\"\n  }\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies user ID matches request\n- Checks all user profile fields are present\n- Confirms address and company objects structure"
+          },
+          "response": []
+        },
+        {
+          "name": "Negative-Get a Single User-Invalid ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Invalid User ID should not succeed \") , ()=>{\r",
+                  "\tpm.expect(pm.response.code).to.be.oneOf([400,404])\r",
+                  "}\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "pm.test(\"Error message exists\", () => {\r",
+                  "    pm.expect(res).to.have.property(\"message\"),\r",
+                  "\tpm.expect(res.message).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"BUG , Returned users for Invalid ID \", () => {\r",
+                  "pm.expect(pm.response.code).to.eql(404)\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/9999",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "9999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Users array not empty\", () => {\r",
+                  "    pm.expect(res.users.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"First user has id\", () => {\r",
+                  "    pm.expect(res.users[0]).to.have.property(\"id\");\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/search?q=John",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "John"
+                }
+              ]
+            },
+            "description": "## Purpose\nSearches for users based on a query string, returning all users that match the search criteria.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/search?q=John`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `q` (required) - The search query string to find matching users (searches across name, username, email, etc.)\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"email\": \"john.doe@x.dummyjson.com\",\n      \"username\": \"johnd\",\n      \"age\": 30,\n      ...\n    }\n  ],\n  \"total\": 5,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies users array exists\n- Checks pagination metadata (total, skip, limit)\n- Confirms search results match query criteria"
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/filter?key=hair.color&value=Brown",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "filter"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "hair.color"
+                },
+                {
+                  "key": "value",
+                  "value": "Brown"
+                }
+              ]
+            },
+            "description": "## Purpose\nFilters users based on a specific field key-value pair, allowing precise user data filtering.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/filter?key=hair.color&value=Brown`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `key` (required) - The field path to filter by (supports nested fields with dot notation, e.g., `hair.color`, `address.city`)\n- `value` (required) - The value to match for the specified key\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"Emily\",\n      \"lastName\": \"Johnson\",\n      \"hair\": {\n        \"color\": \"Brown\",\n        \"type\": \"Curly\"\n      },\n      ...\n    }\n  ],\n  \"total\": 50,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all users match the filter criteria\n- Checks filtered field contains expected value\n- Confirms pagination metadata is present"
+          },
+          "response": []
+        },
+        {
+          "name": "Limit and skip Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users?limit=5&skip=10&select=firstName,age",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "skip",
+                  "value": "10"
+                },
+                {
+                  "key": "select",
+                  "value": "firstName,age"
+                }
+              ]
+            },
+            "description": "## Purpose\nRetrieves a paginated list of users with specific fields selected, demonstrating pagination and field filtering capabilities.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users?limit=5&skip=10&select=firstName,age`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `limit` (optional) - Number of users to return (default: 30)\n- `skip` (optional) - Number of users to skip for pagination (default: 0)\n- `select` (optional) - Comma-separated list of fields to include in response\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 11,\n      \"firstName\": \"John\",\n      \"age\": 30\n    }\n  ],\n  \"total\": 208,\n  \"skip\": 10,\n  \"limit\": 5\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies correct number of users returned (limit)\n- Checks pagination offset (skip)\n- Confirms only selected fields are present in response"
+          },
+          "response": []
+        },
+        {
+          "name": "Sort and order Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+                  "var jsonData = pm.response.json();\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users?sortBy=firstName&order=asc",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "firstName"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "## Purpose\nRetrieves all users sorted by a specific field in ascending or descending order.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users?sortBy=firstName&order=asc`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Query Parameters\n- `sortBy` (optional) - Field name to sort by (e.g., firstName, lastName, age, email)\n- `order` (optional) - Sort order: `asc` (ascending) or `desc` (descending)\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"firstName\": \"Aaron\",\n      \"lastName\": \"Smith\",\n      \"age\": 25,\n      ...\n    }\n  ],\n  \"total\": 208,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies users array is sorted correctly\n- Checks sort order matches requested order (asc/desc)\n- Confirms all user fields are present"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users Carts by User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "\tpm.response.to.have.status(200);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/{{userId}}/carts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "carts"
+              ]
+            },
+            "description": "## Purpose\nRetrieves all shopping carts associated with a specific user by their user ID.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/{{userId}}/carts`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user whose carts to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"carts\": [\n    {\n      \"id\": 1,\n      \"products\": [\n        {\n          \"id\": 1,\n          \"title\": \"Product Name\",\n          \"price\": 549,\n          \"quantity\": 2,\n          \"total\": 1098\n        }\n      ],\n      \"total\": 1098,\n      \"discountedTotal\": 985,\n      \"userId\": 1,\n      \"totalProducts\": 1,\n      \"totalQuantity\": 2\n    }\n  ],\n  \"total\": 3,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all carts belong to specified user\n- Checks carts array structure\n- Confirms cart totals and product details"
+          },
+          "response": []
+        },
+        {
+          "name": "Get users posts by user ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "\tpm.response.to.have.status(200);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/{{userId}}/posts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "posts"
+              ]
+            },
+            "description": "## Purpose\nRetrieves all posts created by a specific user by their user ID.\n\n## Method & Endpoint\n- **Method**: `GET`\n- **Endpoint**: `{{baseURL}}/users/{{userId}}/posts`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint that doesn't require authentication\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user whose posts to retrieve\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**:\n```json\n{\n  \"posts\": [\n    {\n      \"id\": 1,\n      \"title\": \"Post Title\",\n      \"body\": \"Post content...\",\n      \"tags\": [\"tag1\", \"tag2\"],\n      \"reactions\": {\n        \"likes\": 10,\n        \"dislikes\": 2\n      },\n      \"views\": 150,\n      \"userId\": 1\n    }\n  ],\n  \"total\": 5,\n  \"skip\": 0,\n  \"limit\": 30\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies all posts belong to specified user\n- Checks posts array structure\n- Confirms post fields (title, body, tags, reactions)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add a New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "\tpm.response.to.have.status(201);\r",
+                  "});\r",
+                  "const res = pm.response.json();\r",
+                  "\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"firstName and lastName are correct\", () => {\r",
+                  "    pm.expect(res.firstName).to.eql(\"Muhammad\");\r",
+                  "    pm.expect(res.lastName).to.eql(\"Ovi\");\r",
+                  "});\r",
+                  "\r",
+                  "",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Muhammad\",\r\n  \"lastName\": \"Ovi\",\r\n  \"age\": 250\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/add",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "add"
+              ]
+            },
+            "description": "## Purpose\nCreates a new user in the system with the provided user details.\n\n## Method & Endpoint\n- **Method**: `POST`\n- **Endpoint**: `{{baseURL}}/users/add`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Request Body (JSON)\n```json\n{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"username\": \"johndoe\",\n  \"password\": \"password123\",\n  \"age\": 30,\n  \"gender\": \"male\",\n  \"phone\": \"+1-555-123-4567\"\n}\n```\n\n**Required Fields**:\n- `firstName` - User's first name\n- `lastName` - User's last name\n- `email` - User's email address\n- `username` - Unique username\n- `password` - User's password\n\n**Optional Fields**:\n- `age`, `gender`, `phone`, `birthDate`, `address`, `company`\n\n## Expected Response\n- **Status Code**: `201 Created`\n- **Response Structure**: Returns the created user with an assigned ID\n```json\n{\n  \"id\": 209,\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"username\": \"johndoe\",\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 201\n- Verifies user ID is assigned\n- Checks all submitted fields are returned\n- Confirms user creation timestamp"
+          },
+          "response": []
+        },
+        {
+          "name": "Update a User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "\tpm.response.to.have.status(200);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"lastName\": \"Owais\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "## Purpose\nUpdates an existing user's information by their unique identifier.\n\n## Method & Endpoint\n- **Method**: `PUT`\n- **Endpoint**: `{{baseURL}}/users/{{userId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user to update\n\n### Request Body (JSON)\n```json\n{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"age\": 32,\n  \"phone\": \"+1-555-987-6543\"\n}\n```\n\n**Note**: Only include fields you want to update. Unspecified fields remain unchanged.\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the updated user with all fields\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"age\": 32,\n  \"phone\": \"+1-555-987-6543\",\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies updated fields match request\n- Checks user ID remains unchanged\n- Confirms other fields are preserved"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "\tpm.response.to.have.status(200);\r",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "## Purpose\nDeletes a specific user from the system by their unique identifier.\n\n## Method & Endpoint\n- **Method**: `DELETE`\n- **Endpoint**: `{{baseURL}}/users/{{userId}}`\n\n## Authentication\n- **Required**: No\n- This is a public endpoint for demonstration purposes\n\n## Parameters\n### Path Variables\n- `userId` (required) - The unique identifier of the user to delete\n\n## Expected Response\n- **Status Code**: `200 OK`\n- **Response Structure**: Returns the deleted user information with deletion confirmation\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Emily\",\n  \"lastName\": \"Johnson\",\n  \"email\": \"emily.johnson@x.dummyjson.com\",\n  \"username\": \"emilys\",\n  \"isDeleted\": true,\n  \"deletedOn\": \"2024-01-01T12:00:00.000Z\",\n  ...\n}\n```\n\n## Tests Included\n- Validates response status code is 200\n- Verifies `isDeleted` flag is true\n- Checks deletion timestamp is present\n- Confirms deleted user details are returned"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": ""
+    }
+  ]
+}
