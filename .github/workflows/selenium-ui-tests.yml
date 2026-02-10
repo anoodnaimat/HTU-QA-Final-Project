@@ -10,12 +10,13 @@ jobs:
   selenium-tests:
     runs-on: ubuntu-latest
     services:
-      selenium-edge:  # Starts Selenium Standalone Edge container
-        image: selenium/standalone-edge:latest
+      selenium-edge:
+        image: selenium/standalone-edge:4.33.0-20250606  # Pinned stable tag (update via Docker Hub tags)
         options: >-
           --shm-size=2g
           --publish 4444:4444
-          --publish 7900:7900  # VNC debug
+          --publish 7900:7900  # VNC for debug (password: secret)
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,13 +39,9 @@ jobs:
         working-directory: 05-UI-Automation
         run: |
           mvn clean test \
-            -Dwebdriver.edge.driver=selenium \
-            -Dselenium.hub=selenium-edge \
-            -Dremote=true \
+            -Dwebdriver.remote.url=http://selenium-edge:4444/wd/hub \
             -Dbrowser=edge \
-            -Dheadless=true  # Add to pom.xml or tests if needed
-        env:
-          SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+            -Dheadless=true
 
       - name: Upload TestNG report
         if: always()
@@ -54,3 +51,4 @@ jobs:
           path: |
             05-UI-Automation/test-output/
             05-UI-Automation/target/surefire-reports/
+          retention-days: 30  # Optional: Extend artifact retention
