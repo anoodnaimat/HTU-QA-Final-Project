@@ -29,7 +29,9 @@ jobs:
             maven-${{ runner.os }}-
 
       - name: Run Selenium tests
+        working-directory: 05-UI-Automation
         run: mvn clean test
+
 
       - name: Upload TestNG report
         if: always()
