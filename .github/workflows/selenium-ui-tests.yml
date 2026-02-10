@@ -32,12 +32,11 @@ jobs:
         working-directory: 05-UI-Automation
         run: mvn clean test
 
-
       - name: Upload TestNG report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: testng-report
           path: |
-            test-output/
-            target/surefire-reports/
+            05-UI-Automation/test-output/
+            05-UI-Automation/target/surefire-reports/
