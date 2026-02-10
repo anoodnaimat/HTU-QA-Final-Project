@@ -9,7 +9,13 @@ on:
 jobs:
   selenium-tests:
     runs-on: ubuntu-latest
-
+    services:
+      selenium-edge:  # Starts Selenium Standalone Edge container
+        image: selenium/standalone-edge:latest
+        options: >-
+          --shm-size=2g
+          --publish 4444:4444
+          --publish 7900:7900  # VNC debug
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +36,15 @@ jobs:
 
       - name: Run Selenium tests
         working-directory: 05-UI-Automation
-        run: mvn clean test
+        run: |
+          mvn clean test \
+            -Dwebdriver.edge.driver=selenium \
+            -Dselenium.hub=selenium-edge \
+            -Dremote=true \
+            -Dbrowser=edge \
+            -Dheadless=true  # Add to pom.xml or tests if needed
+        env:
+          SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
 
       - name: Upload TestNG report
         if: always()
@@ -40,4 +54,3 @@ jobs:
           path: |
             05-UI-Automation/test-output/
             05-UI-Automation/target/surefire-reports/
-
